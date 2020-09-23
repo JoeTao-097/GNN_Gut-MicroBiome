@@ -26,20 +26,20 @@ def normalization(adjacency):
         归一化后的邻接矩阵，类型为 torch.sparse.FloatTensor
     """
     adjacency += sp.eye(adjacency.shape[0])    # 增加自连接
-    print(1)
+
     degree = np.array(adjacency.sum(1))
-    print(2)
+
     d_hat = sp.diags(np.power(degree, -0.5).flatten())
-    print(3)
+
     L = d_hat.dot(adjacency).dot(d_hat).tocoo()
-    print(4)
+
     # 转换为 torch.sparse.FloatTensor
     indices = torch.from_numpy(np.asarray([L.row, L.col])).long()
-    print(5)
+
     values = torch.from_numpy(L.data.astype(np.float32))
-    print(6)
+
     tensor_adjacency = torch.sparse.DoubleTensor(indices, values, L.shape)
-    print(7)
+
     return tensor_adjacency
 
 
@@ -189,6 +189,8 @@ class GraphConvolution(nn.Module):
 
     def forward(self, adjacency, input_feature):
         """邻接矩阵是稀疏矩阵，因此在计算时使用稀疏矩阵乘法"""
+        adjacency = adjacency.float()
+        input_feature = input_feature.float()
         support = torch.mm(input_feature, self.weight)
 
         output = torch.sparse.mm(adjacency, support)
